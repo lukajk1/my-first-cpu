@@ -4,6 +4,7 @@
 #include "aliases.h"
 #include <string>
 
-std::string printBinary(Word w);
+std::string toBinary(Word w);
+std::string toHex(Word w);
 
 #endif // HELPERS_H

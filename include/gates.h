@@ -126,6 +126,7 @@ struct Condition {
     }
 };
 
+
 struct SRLatch {
     bool out;
     void compute(bool s, bool r) {
@@ -159,6 +160,27 @@ struct Reg16 {
     }
 };
 
+struct Counter {
+    Reg16 reg;
+    Sel16 sel;
+    Add16 inc;
+
+    Word out;
+
+    Counter() {
+        reg.out = 0;
+    }
+
+    void tick(bool st, Word x) {
+        inc.compute(reg.out, 1);
+
+        sel.compute(st, x, inc.out);
+        reg.tick(true, sel.out);
+
+        out = reg.out;
+    }
+};
+
 struct RegisterFile {
     Reg16 registers[256];
 
@@ -174,6 +196,27 @@ struct RegisterFile {
         registers[address].tick(st, x);
 
         out = registers[address].out;
+    }
+};
+
+struct ReadOnlyMemory {
+    Word registers[256];
+    Word out;
+
+    ReadOnlyMemory(const Word program[256]) {
+        for (int i = 0; i < 256; i++) {
+            registers[i] = program[i];
+        }
+        out = 0;
+    }
+
+    void compute(Word address) {
+        // Use bitwise masking to "force" the address into the 0-255 range
+        // This is how hardware actually works (ignoring higher bits)
+        Word effectiveAddress = address & 0xFF;
+
+        // Access the value directly from the array
+        out = registers[effectiveAddress];
     }
 };
 
@@ -228,7 +271,59 @@ struct ALUInstruction {
 };
 
 struct ControlSelector {
+    Sel16 sel0, sel1, sel2, sel3, sel4;
 
+    Word R;
+    bool a, d, a_star, j;
+    void compute(bool s, Word R_0, bool a_0, bool d_0, bool a_star_0, bool j_0, Word R_1, bool a_1, bool d_1, bool a_star_1, bool j_1) {
+        sel0.compute(s, R_0, R_1);
+        R = sel0.out;
+
+        a = s ? a_0 : a_1;
+        d = s ? d_0 : d_1;
+        a_star = s ? a_star_0 : a_star_1;
+        j = s ? j_0 : j_1;
+    }
+};
+
+struct ControlUnit {
+    ALUInstruction alui;
+    ControlSelector controlSel;
+
+    // output
+    Word R;
+    bool a, d, a_star, j;
+
+    void compute(Word I, Word A, Word D, Word A_Star) {
+        bool s = (I >> 15) & 1;
+
+        alui.compute(I, A, D, A_Star);
+        controlSel.compute(s, alui.R, alui.a, alui.d, alui.a_star, alui.j, I, true, false, false, false);
+
+        R = controlSel.R;
+        a = controlSel.a;
+        d = controlSel.d;
+        a_star = controlSel.a_star;
+        j = controlSel.j;
+    }
+};
+
+struct Computer {
+    Counter counter;
+    ControlUnit controlUnit;
+    AddressableMemory memory;
+    ReadOnlyMemory rom;
+
+    bool st;
+    Computer() {
+        st = 0;
+    }
+
+    void tick() {
+        counter.tick(st, );
+        rom.compute(counter.out);
+        controlUnit.compute(rom.out, )
+    }
 };
 
 #endif // GATES_H

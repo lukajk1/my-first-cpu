@@ -1,5 +1,8 @@
 #include <iomanip>
 #include <iostream>
+#include <thread> // For sleep_for
+#include <chrono> // For milliseconds
+
 #include "../include/gates.h"
 #include "../include/helpers.h"
 
@@ -7,6 +10,21 @@
 int main() {
     Word instruction = 0b1;
 
+    Counter pc;
+    bool load = false;
+    Word jumpAddress = 0;
+
+    // Run the simulation for 20 cycles
+    for (int i = 0; i < 20; ++i) {
+        // Update the counter state
+        pc.tick(load, jumpAddress);
+
+        // Display the current value (using your printHex or printBinary helpers)
+        std::cout << "Cycle " << i << " | PC: " << pc.reg.out << std::endl;
+
+        // Delay for 500 milliseconds (half a second)
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
     //Word x = 0x1234; // 0001 0010 0011 0100
     //Word y = 0xABCD; // 1010 1011 1100 1101
 

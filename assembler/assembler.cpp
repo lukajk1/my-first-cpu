@@ -3,9 +3,10 @@
 #include <string>
 #include <vector>
 
+std::string programPath = "programs/add.asm";
+
 int main() {
-    // Open the .asm file
-    std::ifstream asmFile("programs/add.asm");
+    std::ifstream asmFile(programPath);
 
     if (!asmFile.is_open()) {
         std::cerr << "Error: Could not open programs/add.asm" << std::endl;

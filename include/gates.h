@@ -160,14 +160,14 @@ struct Reg16 {
     }
 };
 
-struct Counter {
+struct ProgramCounter {
     Reg16 reg;
     Sel16 sel;
     Add16 inc;
 
     Word out;
 
-    Counter() {
+    ProgramCounter() {
         reg.out = 0;
         out = 0;
     }
@@ -307,7 +307,7 @@ struct ControlUnit {
 };
 
 struct Computer {
-    Counter counter;
+    ProgramCounter counter;
     ControlUnit controlUnit;
     AddressableMemory memory;
     ReadOnlyMemory rom;
@@ -315,18 +315,12 @@ struct Computer {
     Computer(const Word program[256]) : rom(program) {}
 
     void tick() {
-        // 1. Fetch instruction from ROM at current PC
         rom.compute(counter.out);
         Word instruction = rom.out;
 
-        // 2. Decode instruction and compute result
-        //    ControlUnit needs current memory state (A, D, A*)
         controlUnit.compute(instruction, memory.A, memory.D, memory.A_Star);
-
-        // 3. Write back to memory registers (if control signals are set)
         memory.tick(controlUnit.a, controlUnit.d, controlUnit.a_star, controlUnit.R);
 
-        // 4. Update program counter (jump if j=true, else increment)
         counter.tick(controlUnit.j, controlUnit.R);
     }
 };

@@ -6,31 +6,15 @@
 int main() {
     Word program[256] = {0};
 
-    // A-instruction: @5
-    program[0] = 0b0000000000000101;  
-
-    // C-instruction: D=A
-    program[1] = 0b111'01'10010'010'000;  
-
-    // A-instruction: @3
-    program[2] = 0b000'00'00000'000'011;  
-
-    // c inst: d = d+a
-    program[3] = 0b111'00'10000'010'000;  
-
     // a=67 @67
-    program[4] = 0b000'00'00001'000'011;  
-
+    program[0] = 0b000'00'00001'000'011;  
     // a* = a
-    program[5] = 0b111'00'10010'001'000;  
+    program[1] = 0b111'00'10010'001'000;
+    //
+    //// C-instruction: D=A
+    //program[2] = 0b111'00'10010'010'000;
 
-
-    // a* = d (ram[a] = d)
-    //program[5] = 0b111'10'00111'001'000;  
-    // 
-    //@0
-    //program[7] = 0b000'00'00000'000'000;  
-
+    //program[3] = 0b111'00'10010'010'000;
 
     Computer computer(program);
 

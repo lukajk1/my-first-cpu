@@ -169,6 +169,7 @@ struct Counter {
 
     Counter() {
         reg.out = 0;
+        out = 0;
     }
 
     void tick(bool st, Word x) {
@@ -181,21 +182,18 @@ struct Counter {
     }
 };
 
-struct RegisterFile {
-    Reg16 registers[256];
+struct RegisterArray {
+    Reg16 registers[16384];
 
     Word out;
 
     void tick(Word address, Word x, bool st) {
-        // restrict to 0-255
-        if (address >= 256) {
-            std::cout << "address was out of bounds" << std::endl;
-            return;
-        }
+        // Mask to 14 bits (0-16383)
+        Word effectiveAddress = address & 0x3FFF;
 
-        registers[address].tick(st, x);
+        registers[effectiveAddress].tick(st, x);
 
-        out = registers[address].out;
+        out = registers[effectiveAddress].out;
     }
 };
 
@@ -222,7 +220,7 @@ struct ReadOnlyMemory {
 
 struct AddressableMemory {
     Reg16 reg_a, reg_d;
-    RegisterFile ram;
+    RegisterArray ram;
     Word A, D, A_Star;
 
     void tick(bool a, bool d, bool a_star, Word x) {
@@ -232,7 +230,7 @@ struct AddressableMemory {
         reg_d.tick(d, x);
         D = reg_d.out;
 
-        ram.tick(a_star, x, reg_a.out);
+        ram.tick(reg_a.out, x, a_star);
         A_Star = ram.out;
     }
 };
@@ -314,8 +312,7 @@ struct Computer {
     AddressableMemory memory;
     ReadOnlyMemory rom;
 
-    Computer(const Word program[256]) : rom(program) {
-    }
+    Computer(const Word program[256]) : rom(program) {}
 
     void tick() {
         // 1. Fetch instruction from ROM at current PC

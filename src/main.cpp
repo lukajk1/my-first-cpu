@@ -1,68 +1,66 @@
 #include <iomanip>
 #include <iostream>
-#include <thread> // For sleep_for
-#include <chrono> // For milliseconds
-
 #include "../include/gates.h"
 #include "../include/helpers.h"
 
-
 int main() {
-    Word instruction = 0b1;
+    Word program[256] = {0};
 
-    Counter pc;
-    bool load = false;
-    Word jumpAddress = 0;
+    // A-instruction: @5
+    program[0] = 0b0000000000000101;  
 
-    // Run the simulation for 20 cycles
-    for (int i = 0; i < 20; ++i) {
-        // Update the counter state
-        pc.tick(load, jumpAddress);
+    // C-instruction: D=A
+    program[1] = 0b111'01'10010'010'000;  
 
-        // Display the current value (using your printHex or printBinary helpers)
-        std::cout << "Cycle " << i << " | PC: " << pc.reg.out << std::endl;
+    // A-instruction: @3
+    program[2] = 0b000'00'00000'000'011;  
 
-        // Delay for 500 milliseconds (half a second)
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    // c inst: d = d+a
+    program[3] = 0b111'00'10000'010'000;  
+
+    // a=67 @67
+    program[4] = 0b000'00'00001'000'011;  
+
+    // a* = a
+    program[5] = 0b111'00'10010'001'000;  
+
+
+    // a* = d (ram[a] = d)
+    //program[5] = 0b111'10'00111'001'000;  
+    // 
+    //@0
+    //program[7] = 0b000'00'00000'000'000;  
+
+
+    Computer computer(program);
+
+    std::cout << "initial state:" << std::endl;
+    std::cout << "  PC: " << computer.counter.out;
+    std::cout << " | A: " << computer.memory.A;
+    std::cout << " | D: " << computer.memory.D;
+    std::cout << " | RAM[67]: " << computer.memory.ram.registers[67].out;
+    std::cout << std::endl;
+
+    // Run for 10 cycles
+    for (int cycle = 0; cycle < 10; cycle++) {
+        computer.tick();
+
+        std::cout << "state post-line " << cycle << ":" << std::endl;
+        std::cout << "  PC: " << computer.counter.out;
+        std::cout << " | A: " << computer.memory.A;
+        std::cout << " | D: " << computer.memory.D;
+        std::cout << " | RAM[67]: " << computer.memory.ram.registers[67].out;
+        std::cout << std::endl;
+
     }
-    //Word x = 0x1234; // 0001 0010 0011 0100
-    //Word y = 0xABCD; // 1010 1011 1100 1101
 
-    //y = 0x1111;
-    //x = 0xBEEF;
+    std::cout << std::endl;
+    std::cout << "Final State:" << std::endl;
+    std::cout << "  A register: " << computer.memory.A << std::endl;
+    std::cout << "  D register: " << computer.memory.D << std::endl;    
+    std::cout << " | RAM[67]: " << computer.memory.ram.registers[67].out;
 
-    ////std::cout << "x: " << x << std::endl;
-    ////std::cout << "y: " << y << std::endl;
-
-    ////ALU alu;
-    ////bool u, op1, op0, zx, sw;
-    ////u = op1 = op0 = zx = sw = false;
-
-    //////u = op0 =op1 = true;
-    //////u = op0  = true;
-    //////op1 = op0  = true;
-    //////op0 = true;
-    ////u =op1= true;
-
-    ////alu.compute(x, y, u, op1, op0, zx, sw);
-    ////
-    ////std::cout << "binary: " << toBinary(alu.out) << std::endl;
-    ////std::cout << "decimal: " << alu.out << std::endl;
-
-    //Reg16 myReg;
-    //myReg.tick(true, x);
-    //std::cout << "reg contents: " << myReg.out << std::endl;
-
-    //Word ramAddress = 0x0001;
-    //Word beef = 0xBEEF;
-
-    //AddressableMemory am;
-    //am.tick(true, false, false, ramAddress);
-    //std::cout << "ram address: " << am.A << std::endl;
-
-    //am.tick(false, false, true, beef);
-    //std::cout << "value at " << toHex(am.A) << ": " << toHex(am.A_Star) << std::endl;
-
+    std::cout << std::endl;
 
     return 0;
 }

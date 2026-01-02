@@ -8,7 +8,7 @@
 int loadHackProgram(const std::string& filename, Word program[], int maxSize);
 void printState(const Computer& computer, const std::string& label);
 
-std::string hackFile = "loadintoram.hack";
+std::string hackFile = "countandjump.hack";
 
 int main() {
     Word program[256] = { 0 };

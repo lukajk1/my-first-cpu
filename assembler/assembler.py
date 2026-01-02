@@ -227,6 +227,8 @@ if __name__ == "__main__":
 
             while parser.has_more_lines:
                 parser.advance()
+                if not parser.has_more_lines:
+                    break
 
                 if parser.current_instruction_type == instruction.A_INSTRUCTION:
                     symbol = parser.symbol()

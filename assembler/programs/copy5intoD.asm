@@ -6,3 +6,5 @@ D = A // copy a into d
 // 111 + comp(7) + dest(3) + jump(3)
 
 // D = A -> 0010010
+@0
+M = D

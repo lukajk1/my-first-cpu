@@ -100,7 +100,7 @@ class Code:
             '0':   '0101010',
             '1':   '0111111',
             '-1':  '0111010',
-            'D':   '0001100',
+            'D':   '0010011',
             #'A':   '0110000', (non nand-game version)
             'A':   '0010010',
             '!D':  '0001101',
@@ -179,82 +179,94 @@ class SymbolTable:
 # comp = A+1, dest = D, jump = JEQ
 
 if __name__ == "__main__":
+    print("=== Hack Assembler ===")
+    print("Enter 'q' to quit\n")
 
-    filename = input("Enter filename of .asm file in /programs: ").strip()
+    while True:
+        filename = input("Enter filename of .asm file in /programs: ").strip()
 
-    # Add .asm extension if not specified
-    if not filename.endswith('.asm'):
-        filename += '.asm'
+        # Check for quit command
+        if filename.lower() == 'q':
+            print("Exiting assembler...")
+            break
 
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    target_path = os.path.join(current_dir, "programs", filename)
+        # Add .asm extension if not specified
+        if not filename.endswith('.asm'):
+            filename += '.asm'
 
-    if not os.path.exists(target_path):
-        print(f"Error: Could not find {filename} in 'programs' directory.")
-        input("\nPress Enter to exit...")
-        sys.exit(1)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        target_path = os.path.join(current_dir, "programs", filename)
 
-    print(f"File found: {target_path}")
+        if not os.path.exists(target_path):
+            print(f"Error: Could not find {filename} in 'programs' directory.")
+            print()
+            continue
 
-    # First pass: build symbol table with labels
-    parser = Parser(target_path)
-    symbol_table = SymbolTable()
+        print(f"File found: {target_path}")
 
-    instruction_address = 0
-    while parser.has_more_lines:
-        parser.advance()
+        try:
+            # First pass: build symbol table with labels
+            parser = Parser(target_path)
+            symbol_table = SymbolTable()
 
-        if parser.current_instruction_type == instruction.L_INSTRUCTION:
-            # Add label to symbol table
-            symbol = parser.symbol()
-            symbol_table.add_entry(symbol, instruction_address)
-        else:
-            # Count actual instructions
-            instruction_address += 1
+            instruction_address = 0
+            while parser.has_more_lines:
+                parser.advance()
 
-    # Second pass: generate machine code
-    parser = Parser(target_path)
-    code = Code()
-    converted_instructions = []
+                if parser.current_instruction_type == instruction.L_INSTRUCTION:
+                    # Add label to symbol table
+                    symbol = parser.symbol()
+                    symbol_table.add_entry(symbol, instruction_address)
+                else:
+                    # Count actual instructions
+                    instruction_address += 1
 
-    while parser.has_more_lines:
-        parser.advance()
+            # Second pass: generate machine code
+            parser = Parser(target_path)
+            code = Code()
+            converted_instructions = []
 
-        if parser.current_instruction_type == instruction.A_INSTRUCTION:
-            symbol = parser.symbol()
-            address = symbol_table.get_address(symbol)
-            # A-instruction: 0 + 15-bit address
-            binary = f"0{address:015b}"
-            converted_instructions.append(binary)
+            while parser.has_more_lines:
+                parser.advance()
 
-        elif parser.current_instruction_type == instruction.C_INSTRUCTION:
-            dest_bits = code.dest(parser.dest())
-            comp_bits = code.comp(parser.comp())
-            jump_bits = code.jump(parser.jump())
-            # C-instruction: 111 + comp + dest + jump
-            binary = f"111{comp_bits}{dest_bits}{jump_bits}"
-            converted_instructions.append(binary)
+                if parser.current_instruction_type == instruction.A_INSTRUCTION:
+                    symbol = parser.symbol()
+                    address = symbol_table.get_address(symbol)
+                    # A-instruction: 0 + 15-bit address
+                    binary = f"0{address:015b}"
+                    converted_instructions.append(binary)
 
-        elif parser.current_instruction_type == instruction.L_INSTRUCTION:
-            # Labels don't generate machine code
-            pass
+                elif parser.current_instruction_type == instruction.C_INSTRUCTION:
+                    dest_bits = code.dest(parser.dest())
+                    comp_bits = code.comp(parser.comp())
+                    jump_bits = code.jump(parser.jump())
+                    # C-instruction: 111 + comp + dest + jump
+                    binary = f"111{comp_bits}{dest_bits}{jump_bits}"
+                    converted_instructions.append(binary)
 
-    # Write output to programs directory with same name as input
-    base_filename = os.path.splitext(filename)[0]  # Remove .asm extension
-    output_filename = base_filename + ".hack"
-    output_path = os.path.join(current_dir, "programs", output_filename)
+                elif parser.current_instruction_type == instruction.L_INSTRUCTION:
+                    # Labels don't generate machine code
+                    pass
 
-    with open(output_path, "w") as f:
-        f.write("\n".join(converted_instructions) + "\n")
+            # Write output to programs directory with same name as input
+            base_filename = os.path.splitext(filename)[0]  # Remove .asm extension
+            output_filename = base_filename + ".hack"
+            output_path = os.path.join(current_dir, "programs", output_filename)
 
-    print(f"\n=== Assembly Complete ===")
-    print(f"Instructions assembled: {len(converted_instructions)}")
-    print(f"Output written to: programs/{output_filename}")
-    print()
+            with open(output_path, "w") as f:
+                f.write("\n".join(converted_instructions) + "\n")
 
-    # Show first few lines
-    print("First 10 instructions:")
-    for i, inst in enumerate(converted_instructions[:10]):
-        print(f"{i:3d}: {inst}")
+            print(f"\n=== Assembly Complete ===")
+            print(f"Instructions assembled: {len(converted_instructions)}")
+            print(f"Output written to: programs/{output_filename}")
+            print()
 
-    input("\nPress Enter to exit...")
+            # Show first few lines
+            print("First 10 instructions:")
+            for i, inst in enumerate(converted_instructions[:10]):
+                print(f"{i:3d}: {inst}")
+            print()
+
+        except Exception as e:
+            print(f"Error during assembly: {e}")
+            print()

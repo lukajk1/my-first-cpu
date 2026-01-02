@@ -5,12 +5,42 @@
 #include "../include/gates.h"
 #include "../include/helpers.h"
 
-bool loadHackProgram(const std::string& filename, Word program[], int maxSize) {
+int loadHackProgram(const std::string& filename, Word program[], int maxSize);
+void printState(const Computer& computer, const std::string& label);
+
+std::string hackFile = "loadintoram.hack";
+
+int main() {
+    Word program[256] = { 0 };
+
+    int instructionCount = loadHackProgram(hackFile, program, 256);
+    if (instructionCount < 0) {
+        return 1;
+    }
+
+    Computer computer(program);
+
+    std::cout << std::endl;
+    printState(computer, "initial state:");
+
+    // Run for as many cycles as there are instructions
+    for (int cycle = 0; cycle < instructionCount; cycle++) {
+        computer.tick();
+        printState(computer, "state post-line " + std::to_string(cycle) + ":");
+    }
+
+    std::cout << std::endl;
+    printState(computer, "Final State:");
+
+    return 0;
+}
+
+int loadHackProgram(const std::string& filename, Word program[], int maxSize) {
     std::ifstream file("../assembler/programs/" + filename);
 
     if (!file.is_open()) {
         std::cerr << "Error: Could not open " << filename << std::endl;
-        return false;
+        return -1;
     }
 
     std::string line;
@@ -34,48 +64,15 @@ bool loadHackProgram(const std::string& filename, Word program[], int maxSize) {
 
     file.close();
     std::cout << "Loaded " << lineCount << " instructions from " << filename << std::endl;
-    return true;
+    return lineCount;
 }
 
-int main() {
-    Word program[256] = {0};
-
-    // Specify the .hack file to load
-    std::string hackFile = "copy5intoD.hack";
-
-    if (!loadHackProgram(hackFile, program, 256)) {
-        return 1;
-    }
-
-    Computer computer(program);
-
-    std::cout << "initial state:" << std::endl;
+void printState(const Computer& computer, const std::string& label) {
+    std::cout << label << std::endl;
     std::cout << "  PC: " << computer.counter.out;
     std::cout << " | A: " << computer.memory.A;
     std::cout << " | D: " << computer.memory.D;
     std::cout << " | RAM[0]: " << computer.memory.ram.registers[0].out;
     std::cout << std::endl;
-
-    // Run for 10 cycles
-    for (int cycle = 0; cycle < 10; cycle++) {
-        computer.tick();
-
-        std::cout << "state post-line " << cycle << ":" << std::endl;
-        std::cout << "  PC: " << computer.counter.out;
-        std::cout << " | A: " << computer.memory.A;
-        std::cout << " | D: " << computer.memory.D;
-        std::cout << " | RAM[0]: " << computer.memory.ram.registers[0].out;
-        std::cout << std::endl;
-
-    }
-
-    std::cout << std::endl;
-    std::cout << "Final State:" << std::endl;
-    std::cout << "  A register: " << computer.memory.A << std::endl;
-    std::cout << "  D register: " << computer.memory.D << std::endl;    
-    std::cout << " | RAM[0]: " << computer.memory.ram.registers[0].out;
-
-    std::cout << std::endl;
-
-    return 0;
 }
+

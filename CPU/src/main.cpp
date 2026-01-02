@@ -9,6 +9,7 @@ int loadHackProgram(const std::string& filename, Word program[], int maxSize);
 void printState(const Computer& computer, const std::string& label);
 
 std::string hackFile = "countandjump.hack";
+const int CYCLES_TO_RUN = 100;
 
 int main() {
     Word program[256] = { 0 };
@@ -23,8 +24,8 @@ int main() {
     std::cout << std::endl;
     printState(computer, "initial state:");
 
-    // Run for as many cycles as there are instructions
-    for (int cycle = 0; cycle < instructionCount; cycle++) {
+    // Run for specified number of cycles
+    for (int cycle = 0; cycle < CYCLES_TO_RUN; cycle++) {
         computer.tick();
         printState(computer, "state post-line " + std::to_string(cycle) + ":");
     }
@@ -73,6 +74,7 @@ void printState(const Computer& computer, const std::string& label) {
     std::cout << " | A: " << computer.memory.A;
     std::cout << " | D: " << computer.memory.D;
     std::cout << " | RAM[0]: " << computer.memory.ram.registers[0].out;
+    std::cout << " | RAM[1]: " << computer.memory.ram.registers[1].out;
     std::cout << std::endl;
 }
 

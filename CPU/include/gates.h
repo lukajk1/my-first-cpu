@@ -321,7 +321,7 @@ struct Computer {
         controlUnit.compute(instruction, memory.A, memory.D, memory.A_Star);
         memory.tick(controlUnit.a, controlUnit.d, controlUnit.a_star, controlUnit.R);
 
-        counter.tick(controlUnit.j, controlUnit.R);
+        counter.tick(controlUnit.j, memory.A);
     }
 };
 

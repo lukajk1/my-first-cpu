@@ -3,22 +3,19 @@ D=A
 @0
 M=D // stored 5 to ram[0]
 
-@5
+// subtract 1 from ram[0], save.
+// if ram[0] gt 0, jump.
+// else, continue.
+
+// load ram[0]
+@0
+D=M
+D=D-1
+M=D // save back to M
+@4
+D;JGT
+
+@99
 D=A
 @1
-M=D // stored 5 to ram[1]
-// begin loop
-// ram[1] = i
-// compare ram[1] to ram[0]
-
-@1 // prepare to retrieve ram[1]
-M=M-1 // ram[1] += 1, address of M is always value A, ram[1] = i
-D=M
-// write this to ram[*A]
-A=D
-M=A // ram[i+1] = i (hopefully)
-
-@1
-
-
-
+M=D

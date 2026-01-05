@@ -9,7 +9,7 @@ int loadHackProgram(const std::string& filename, Word program[], int maxSize);
 void printState(const Computer& computer, const std::string& label);
 
 std::string hackFile = "countandjump_labels.hack";
-const int CYCLES_TO_RUN = 100;
+const int CYCLES_TO_RUN = 50;
 
 int main() {
     Word program[256] = { 0 };
